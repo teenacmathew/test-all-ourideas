@@ -231,6 +231,3 @@ DEPENDENCIES
   will_paginate (= 2.3.14)
   xml-simple (= 1.0.12)
   yfactorial-utility_scopes (= 0.2.2)
-
-BUNDLED WITH
-   1.16.0

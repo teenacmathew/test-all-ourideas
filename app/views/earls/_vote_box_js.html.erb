@@ -90,6 +90,9 @@
     // creates new idea vote buttons and slide them in, while
     // sliding out the old idea vote buttons
     function loadNewPrompts(data) {
+
+      debugger;
+
       var oldLeftDiv = $('.leftside.btn-vote-idea').closest('div');
       var oldRightDiv = $('.rightside.btn-vote-idea').closest('div');
       var newLeftDiv = oldLeftDiv.clone(true).hide();
@@ -126,6 +129,48 @@
         $(this).remove();
       });
     }
+
+    function loadNewPrompts1(data) {
+
+      debugger;
+
+      //var oldLeftDiv = $('.leftside.btn-vote1-idea').closest('div');
+      var oldRightDiv = $('.tab-content.question-vote.row-fluid');
+      //var newLeftDiv = oldLeftDiv.clone(true).hide();
+      var newRightDiv = oldRightDiv.clone(true).hide();
+      //var newLeft = newLeftDiv.find('.btn-vote1-idea');
+      var newRight = newRightDiv.find('.btn-vote1-idea');
+      var bothNew = newRight;
+
+      bothNew.addClass('btn-primary').removeClass('btn-success');
+
+      //newLeft.html(data.newleft);
+      newRight.html(data.newright);
+      //newLeft.data('choice_id', data.left_choice_id);
+      //newLeft.data('choice_url', data.left_choice_url);
+      newRight.data('choice_id', data.right_choice_id);
+      newRight.data('choice_url', data.right_choice_url);
+
+      //newLeftDiv.insertBefore(oldLeftDiv);
+      newRightDiv.insertBefore(oldRightDiv);
+
+      // update can't decide options
+      //$('.cd_options .leftside em').html(data.newleft);
+      $('.cd_options .rightside em').html(data.newright);
+
+      //used for fraud detection / back button behavior fixing
+      //$('#left_side_text').val(data.newleft);
+      $('#right_side_text').val(data.newright);
+
+      // animation for sliding in / out choices
+      newRightDiv.slideDown(function() {
+        bothNew.removeClass('disabled');
+      });
+      oldRightDiv.slideUp(function() {
+        $(this).remove();
+      });
+    }
+
 
     $('.votebox').on('click', '.btn-vote-idea', function(event){
       event.preventDefault();
@@ -185,6 +230,51 @@
       }); // End ajax method
     });
 
+    $('.votebox2').on('click', '.rate1, .rate2, .rate3, .rate4, .rate5', function(event){
+      event.preventDefault();
+      var currentTime = new Date();
+      var time_viewed = currentTime - loadedTime
+      var the_locale = "<%= I18n.locale %>"
+      var winningLink = $(event.currentTarget);
+
+      var question_id = winningLink.data("question_id");
+
+      var prompt_id = $('#prompt_id').val()
+      var appearance_lookup = $('#appearance_lookup').val()
+      $('.tellmearea').html('');
+
+      $.ajax({
+        type: "post",
+        url: rootPath + 'questions/' + question_id + '/prompts/' + prompt_id + '/vote.js' + '?locale=' + the_locale,
+        dataType: "json",
+        timeout: 10000,
+        data: {
+          'authenticity_token' : AUTH_TOKEN,
+          'time_viewed' : time_viewed,
+          'prompt_id': prompt_id,
+          'appearance_lookup': appearance_lookup,
+          'direction' : "right",
+          'type' : 'rating',
+          'value' : 1
+        },
+        error: function(request,error) {
+          showAjaxError(request, error);
+          loadedTime = new Date(); //reset loaded time
+        },
+        success: function(data){
+
+          loadNewPrompts1(data);
+
+          $('#prompt_id').val(data["prompt_id"]);
+          $('#appearance_lookup').val(data["appearance_lookup"]);
+
+          current_vote_count = $('#votes_count').html();
+          $('#votes_count').html(increment(current_vote_count));
+
+          loadedTime = new Date(); //reset loaded time
+        }// End success
+      }); // End ajax method
+    });
 
     function showAjaxError(request, error) {
       if (error == 'error') {

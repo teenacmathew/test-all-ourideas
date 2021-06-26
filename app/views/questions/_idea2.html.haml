@@ -1,0 +1,12 @@
+%button.btn.btn-vote.btn-vote1-idea.btn-primary
+  = h(truncate(data, :length => 140, :omission => '…'))
+%a.btn.btn-large.rating.rate1{:id => side, :class => side, :"data-question_id" => @question.id, :"data-side" => side, :"data-choice_id" => choice_id, :"data-question_slug" => @question.slug, :"data-choice_url" => question_choice_path(@question.slug, choice_id)}
+  = h(truncate("1", :length => 140, :omission => '…'))
+%a.btn.btn-large.rating.rate2{:id => side, :class => side, :"data-question_id" => @question.id, :"data-side" => side, :"data-choice_id" => choice_id, :"data-question_slug" => @question.slug, :"data-choice_url" => question_choice_path(@question.slug, choice_id)}
+  = h(truncate("2", :length => 140, :omission => '…'))
+%a.btn.btn-large.rating.rate3{:id => side, :class => side, :"data-question_id" => @question.id, :"data-side" => side, :"data-choice_id" => choice_id, :"data-question_slug" => @question.slug, :"data-choice_url" => question_choice_path(@question.slug, choice_id)}
+  = h(truncate("3", :length => 140, :omission => '…'))
+%a.btn.btn-large.rating.rate4{:id => side, :class => side, :"data-question_id" => @question.id, :"data-side" => side, :"data-choice_id" => choice_id, :"data-question_slug" => @question.slug, :"data-choice_url" => question_choice_path(@question.slug, choice_id)}
+  = h(truncate("4", :length => 140, :omission => '…'))
+%a.btn.btn-large.rating.rate5{:id => side, :class => side, :"data-question_id" => @question.id, :"data-side" => side, :"data-choice_id" => choice_id, :"data-question_slug" => @question.slug, :"data-choice_url" => question_choice_path(@question.slug, choice_id)}
+  = h(truncate("5", :length => 140, :omission => '…'))

@@ -7,14 +7,16 @@ class PromptsController < ApplicationController
     voted_prompt.id = params[:id]
     voted_prompt.prefix_options = {:question_id => params[:question_id]}
     session[:has_voted] = true
-
+    #call to api
     @earl = Earl.find_by_question_id(params[:question_id].to_s)
-    if params[:direction] &&
+    #Check if parameters contain rating
+    if params[:type] && params[:type] == "rating" &&
       vote = voted_prompt.post(:vote,
         :question_id => params[:question_id],
           :vote => get_object_request_options(params, :vote),
-          :next_prompt => get_next_prompt_options
-
+          :next_prompt => get_next_prompt_options,
+          :type => params[:type],
+          :value => params[:value]
       )
 
       next_prompt = Hash.from_xml(vote.body)['prompt']
@@ -43,7 +45,41 @@ class PromptsController < ApplicationController
       result = add_photocracy_info(result, next_prompt, params[:question_id]) if @photocracy
       render :json => result.to_json
     else
-      render :text => 'Vote unsuccessful.', :status => :unprocessable_entity
+      if params[:direction] &&
+        vote = voted_prompt.post(:vote,
+          :question_id => params[:question_id],
+            :vote => get_object_request_options(params, :vote),
+            :next_prompt => get_next_prompt_options,
+        )
+
+        next_prompt = Hash.from_xml(vote.body)['prompt']
+
+        result = {
+          :newleft           => CGI::escapeHTML(truncate(next_prompt['left_choice_text'], :length => 140, :omission => '…')),
+          :newright          => CGI::escapeHTML(truncate(next_prompt['right_choice_text'], :length => 140, :omission => '…')),
+          :left_choice_id    => next_prompt['left_choice_id'],
+          :left_choice_url   => question_choice_path(@earl.name, next_prompt['left_choice_id']),
+          :right_choice_id   => next_prompt['right_choice_id'],
+          :right_choice_url  => question_choice_path(@earl.name, next_prompt['right_choice_id']),
+          :appearance_lookup => next_prompt['appearance_id'],
+          :prompt_id         => next_prompt['id'],
+        }
+        @survey_session.appearance_lookup = result[:appearance_lookup]
+
+        if wikipedia?
+          # wikipedia ideas are prepended by a 4 character integer
+          # that represents their image id
+          result[:left_image_id] = CGI::escapeHTML(next_prompt['left_choice_text'].split('-',2)[0])
+          result[:right_image_id] = CGI::escapeHTML(next_prompt['right_choice_text'].split('-',2)[0])
+          result[:newleft] = CGI::escapeHTML(truncate(next_prompt['left_choice_text'].split('-',2)[1], :length => 140, :omission => '…')).gsub("\n","<br />")
+          result[:newright] = CGI::escapeHTML(truncate(next_prompt['right_choice_text'].split('-',2)[1], :length => 140, :omission => '…')).gsub("\n","<br />")
+        end
+
+        result = add_photocracy_info(result, next_prompt, params[:question_id]) if @photocracy
+        render :json => result.to_json
+      else
+        render :text => 'Vote unsuccessful.', :status => :unprocessable_entity
+      end
     end
   end
 
